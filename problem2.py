@@ -80,10 +80,10 @@ def newtonMethod(f, grad, hess, x0, lineSearch = backtrackLineSearch):
             p = np.linalg.solve(hessian, -gradX)
         except np.linalg.linalg.LinAlgError:
             #smallest eigenvalue of our hessian
-            gamma = eig(hessian)[0].min()
+            gamma = 9.9 + eig(hessian)[0].min()
             #making the hessian non singular by adding the multiple of the
             #absolute value of the smalled eigen value
-            nonSingularHess = hessian + 10*np.identity(len(hessian))
+            nonSingularHess = hessian + gamma*np.identity(len(hessian))
             p = np.linalg.solve(nonSingularHess, -gradX)
 
         t = lineSearch(f, gradX, p, x)
