@@ -1,20 +1,30 @@
 import numpy as np
+import random
+import matplotlib.pyplot as plot
+from numpy.linalg import eig
 
 #dimensions
 M = 200
 N = 4
 
-#parameter array
+#starting point
 a=[1]*N
 
-#random sample data
-sampleData = [0]*M
+#generating sample data
+t = np.linspace(0,np.pi/2,M)
+p = [0.8*np.sin(2*np.pi*1.15*t[i])+ 1.2 * np.sin(2*np.pi*0.9*t[i]) for i in range(200)]
+random.seed(73)
+sampleData = [p[i] + random.uniform(-0.15,0.15) for i in range(M)]
+
+def plotNoisyFunction():
+    plot.plot(sampleData)
+    # plot.show()
 
 def model(a,t):
     return a[0]*np.sin(2*np.pi*a[1]*t) + a[2]*np.sin(2*np.pi*a[3]*t)
 
 def fi(x):
-    r = [ model(x,i) - sampleData[i] for i in range(len(sampleData))]
+    r = [ model(x,t[i]) - sampleData[i] for i in range(len(sampleData))]
     r = np.array(r)
     return r
 
@@ -24,22 +34,18 @@ def objectiveFunction(x):
 
 def jacobian(x):
     jacobian = np.zeros((M,N))
-    #df/da1 = a1
-    #df/da2 = a1 cos(2pia2t) * a2
-    #df/da3 = a3
-    #df/da4 = a3 cos(2pia4t) * a4
     const = 2*np.pi
 
     for i in range(M):
         for j in range(N):
             if(j == 0):
-                jacobian[i][j] = x[0]
+                jacobian[i][j] = np.sin(2*np.pi*a[1]*t[i])
             elif(j==1):
-                jacobian[i][j] = x[0] * np.cos(const*i*x[1])*x[1]
+                jacobian[i][j] = x[0] * np.cos(const*x[1]*t[i])*const*t[i]
             elif(j==2):
-                jacobian[i][j] = x[2]
+                jacobian[i][j] = np.sin(2*np.pi*a[3]*t[i])
             else:
-                jacobian[i][j] = x[2] * np.cos(const*i*x[3])*x[3]
+                jacobian[i][j] = x[2] * np.cos(const*x[3]*t[i])*const*t[i]
 
     return jacobian
 
@@ -47,8 +53,8 @@ def gradient(x):
     return fi(x).dot(jacobian(x))
 
 def gauss_hessian(x):
-    jacobian = jacobian(x)
-    return jacobian.dot(jacobian)
+    jacobianAtx = jacobian(x)
+    return (jacobianAtx.T).dot(jacobianAtx)
 
 def backtrackLineSearch(f, gk, pk, xk):
     a = .1
@@ -67,9 +73,20 @@ def newtonMethod(f, grad, hess, x0, lineSearch = backtrackLineSearch):
     tol = 1e-5
     norm_gradX = np.linalg.norm(grad(x))
     gradX = grad(x)
+
     while not (norm_gradX < tol):
         #the system of linear equation that needs to be solved to determine the direction
-        p = np.linalg.solve(hess(x), -gradX)
+        hessian = hess(x)
+        try:
+            p = np.linalg.solve(hessian, -gradX)
+        except np.linalg.linalg.LinAlgError:
+            #smallest eigenvalue of our hessian
+            gamma = eig(hessian)[0].min()
+            #making the hessian non singular by adding the multiple of the
+            #absolute value of the smalled eigen value
+            nonSingularHess = hessian + 1.5*np.abs(gamma)*np.identity(len(hessian))
+            p = np.linalg.solve(nonSingularHess, -gradX)
+
         t = lineSearch(f, gradX, p, x)
         x = x + t * p
 
@@ -78,10 +95,12 @@ def newtonMethod(f, grad, hess, x0, lineSearch = backtrackLineSearch):
         hist.append(x)
     return (x, hist)
 
-def plotError(list_f,star_f):
-    err = [np.linalg.norm(v) for v in (list_f - star_f)]
-    cp = plot.semilogy(err)
-    plot.show(cp)
+def plotfixedFunction():
+    (x, hist) = newtonMethod(objectiveFunction,gradient,gauss_hessian,a)
+    fixedPoints = [model(x,t[i]) for i in range(len(sampleData))]
+    #print fixedPoints
+    plot.plot(fixedPoints)
+    plot.show()
 
-(x, hist) = newtonMethod(objectiveFunction,gradient,gauss_hessian,a)
-plotError(hist,hist[len(hist)-1])
+plotNoisyFunction()
+plotfixedFunction()
