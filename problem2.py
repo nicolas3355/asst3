@@ -18,7 +18,6 @@ sampleData = [p[i] + random.uniform(-0.15,0.15) for i in range(M)]
 
 def plotNoisyFunction():
     plot.plot(sampleData)
-    # plot.show()
 
 def model(a,t):
     return a[0]*np.sin(2*np.pi*a[1]*t) + a[2]*np.sin(2*np.pi*a[3]*t)
@@ -84,7 +83,7 @@ def newtonMethod(f, grad, hess, x0, lineSearch = backtrackLineSearch):
             gamma = eig(hessian)[0].min()
             #making the hessian non singular by adding the multiple of the
             #absolute value of the smalled eigen value
-            nonSingularHess = hessian + 1.5*np.abs(gamma)*np.identity(len(hessian))
+            nonSingularHess = hessian + 10*np.identity(len(hessian))
             p = np.linalg.solve(nonSingularHess, -gradX)
 
         t = lineSearch(f, gradX, p, x)
@@ -98,6 +97,7 @@ def newtonMethod(f, grad, hess, x0, lineSearch = backtrackLineSearch):
 def plotfixedFunction():
     (x, hist) = newtonMethod(objectiveFunction,gradient,gauss_hessian,a)
     fixedPoints = [model(x,t[i]) for i in range(len(sampleData))]
+    print x
     #print fixedPoints
     plot.plot(fixedPoints)
     plot.show()
