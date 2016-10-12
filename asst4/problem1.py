@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import eig
 from numpy.linalg import inv
-
+from numpy.linalg import norm
 d = np.array([float(line.rstrip('\r\n')) for line in open('d.dat')])
 g = np.array([[float(number) for number in rowOfNumbers.split()] \
 for rowOfNumbers in [line.rstrip('\r\n') for line in open('G.dat')]])
@@ -32,3 +32,19 @@ try:
     inv(matrix)
 except np.linalg.linalg.LinAlgError as e:
     print e
+
+alpha = 0.001
+
+x = np.linalg.solve(matrix + alpha*np.identity(len(matrix)),(g.T).dot(d))
+img = np.zeros((16,16))
+for i in range(16):
+    for j in range(16):
+        img[i,j] = x[i + 16*j]
+
+import matplotlib.pyplot as plot
+# import matplotlib.image as mpimg
+
+plot.imshow(img)
+plot.show()
+
+print x
