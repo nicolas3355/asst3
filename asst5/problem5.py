@@ -47,5 +47,21 @@ def lagrange(x, l):
 
 # feasibility:
 print "Feasibility", -A.dot(xstar)+b
+# prints [ 0.   0.  -3.5], all non-positive
 
-print lagrange(xstar, lstar)
+# complementary condition: fi dot lambdas = 0
+"""
+lambdas = [0.0333, 0.20, 0.0]
+
+so lambda * feasibility_vector = [0, 0, 0]
+
+"""
+
+c = np.array([0.5, -0.5, 0.8, -0.8, 0, 0, 0])
+A = np.matrix([
+    [-3, 3, 0, 0, 1, 0, 0],
+    [-2, 2, -4, 4, 0, 1, 0],
+    [-2, 2, -5, 5, 0, 0, 1]])
+
+res = linprog(c, A_eq=A, b_eq=-b)
+print "Canon", res
