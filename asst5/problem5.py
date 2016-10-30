@@ -65,3 +65,14 @@ A = np.matrix([
 
 res = linprog(c, A_eq=A, b_eq=-b)
 print "Canon", res
+"""
+Canon
+     fun: 2.2000000000000002
+ message: 'Optimization terminated successfully.'
+     nit: 3
+   slack: array([], dtype=float64)
+  status: 0
+ success: True
+       x: array([ 2. ,  0. ,  1.5,  0. ,  0. ,  0. ,  3.5])
+"""
+
