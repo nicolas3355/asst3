@@ -24,22 +24,24 @@ for i in range (0,rows):
 # Known is 1 if the pixel is known,
 # 0 if the pixel was corrupted.
 # The Known matrix is initialized randomly.
+knownInTwoDimenstion = np.zeros((rows,cols))
 Known = np.zeros((rows * cols))
 for i in xrange(rows):
     for j in xrange(cols):
-        if np.random.random() > 0.3:
+        if np.random.random() > 0.5:
             Known[indexOf(i, j)] = 1
+            knownInTwoDimenstion[i,j] =1
 
 Ucorr = Known*ejre
-
-# corr_img = Image.fromarray(Ucorr)
+UcorruptInTwoDimensions = knownInTwoDimenstion * Uorig
+corr_img = Image.fromarray(UcorruptInTwoDimensions)
 # orig_img = Image.fromarray(Uorig)
 
 # Display the images.
 fig, ax = plt.subplots(1, 2,figsize=(10, 5))
-# ax[1].imshow(corr_img);
-# ax[1].set_title("Corrupted Image")
-# ax[1].axis('off');
+ax[1].imshow(corr_img);
+ax[1].set_title("Corrupted Image")
+ax[1].axis('off');
 
 
 
@@ -75,7 +77,7 @@ U = Variable(rows * cols)
 variables.append(U)
 constraints.append(mul_elemwise(Known, U) == mul_elemwise(Known, Ucorr))
 #tv is a built in function l2 total variation defined exacly as the one in the asst
-objectiveFunction = tv(DIFF1*U) + tv(DIFF2*U)
+objectiveFunction = norm(DIFF1*U,1) + norm(DIFF2*U,1)
 
 prob = Problem(Minimize(objectiveFunction), constraints)
 prob.solve(verbose=True, solver=SCS)
